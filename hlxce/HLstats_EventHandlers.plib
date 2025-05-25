@@ -1074,7 +1074,7 @@ sub doEvent_Frag
          } else {
              $msg = sprintf("%s%s (%s) killed %s%s",$kbot,$k_name,&number_format($killer->{skill}),$vbot,$v_name);
          }
-         my @rcmds;print $killer->{userid}."\n".$killer->{playerid}."\n";
+         my @rcmds;
          if (($killer->{is_bot} == 0) && ($killer->{"display_events"} == 1) && ($killer->{playerid} > 0)) {
          	push(@rcmds, sprintf("%s %s%s %s",$rcmd,$k_userid,$colorparam,$g_servers{$s_addr}->quoteparam($msg)));
          }  
@@ -1093,7 +1093,6 @@ sub doEvent_Frag
 		$desc = "(IGNORED) BonusRound: ";
 	} elsif ($killer && $victim) {
 		if (($g_servers{$s_addr}->{ignore_bots} == 1) && (($killer->{is_bot} == 1) || ($victim->{is_bot} == 1))) {
-        print "ok\n";
 			$desc = "(IGNORED) BOT: ";
 		} elsif ($g_servers{$s_addr}->{play_game} == L4D() && $killer->{team} eq "Infected" && $victim->{team} eq "Infected") {
 			$desc = "(IGNORED) L4D Infected TK: ";
@@ -1885,15 +1884,19 @@ sub doEvent_PlayerAction
 					if ($g_servers{$s_addr}->{broadcasting_player_actions} == 1) {
 						my $p_userid  = $g_servers{$s_addr}->format_userid($player->{userid});
 						if (($player->{is_bot} == 0) && ($player->{display_events} == 1) && ($player->{playerid} > 0)) {
-							my $colorparam = $g_servers{$s_addr}->{"mod"} eq "CSS"?"{default}":$g_servers{$s_addr}->{format_color};
-							my $coloraction = $g_servers{$s_addr}->{"mod"} eq "CSS"?"{green}":$g_servers{$s_addr}->{format_action};
-                            my $player_color = $player->{team} eq "CT"? $g_servers{$s_addr}->{"color_ct"}:$g_servers{$s_addr}->{"color_t"};
+							my $colorparam = $g_servers{$s_addr}->{format_color};
+							my $coloraction = $g_servers{$s_addr}->{format_action};
 							if ($reward_player !=0) {
 								my $verb = "got";
 								if ($reward_player < 0) {
 									$verb = "lost";
 								}
-								my $msg = sprintf("{%s}%s{default} %s %s points (%s) for %s%s", $player_color,$p_name, $verb, abs($reward_player),&number_format($p_skill),$coloraction,$actionname);
+                                if ( $g_servers{$s_addr}->{"mod"} eq "CSS" ) {
+                                    my $player_color = $player->{team} eq "CT"? $g_servers{$s_addr}->{"color_ct"}:$g_servers{$s_addr}->{"color_t"};
+								    my $msg = sprintf("{%s}%s{default} %s %s points (%s) for %s%s", $player_color,$p_name, $verb, abs($reward_player),&number_format($p_skill),"{green}",$actionname);                                
+                                } else {
+								    my $msg = sprintf("%s %s %s points (%s) for %s%s", $p_name, $verb, abs($reward_player),&number_format($p_skill),$coloraction,$actionname);
+                                }
 								my $cmd_str = sprintf("%s %s%s %s",$rcmd,$p_userid,$colorparam,$g_servers{$s_addr}->quoteparam($msg));
 								$g_servers{$s_addr}->dorcon($cmd_str);
 							}
