@@ -312,8 +312,7 @@ sub quoteparam {
 	my($self, $message) = @_;
 	$message =~ s/'/ ' /g;
 	$message =~ s/"/ '' /g;
-	
-	if (($self->{game_engine} != 2 || $self->{mod} eq "SOURCEMOD") && $self->{mod} ne "MANI") {
+	if (($self->{game_engine} != 2 || $self->{mod} eq "SOURCEMOD") && $self->{mod} ne "MANI" && $self->{mod} ne "CSS") {
 		return "\"".$message."\"";
 	}
 	return $message;
@@ -406,12 +405,17 @@ sub dorcon
     my $result;
     my $rcon_obj = $self->{rcon_obj};
 	if (($rcon_obj) && ($::g_rcon == 1) && ($self->{rcon} ne "")) {
-	 
-		# replace ; to avoid executing multiple rcon commands.
-		$command  =~ s/;//g;
-	
+
+        # replace ; to avoid executing multiple rcon commands.
+	    $command  =~ s/;//g;
+           
+        if ($self->{mod} eq "CSS") {
+            $command =~ s/"\d+"//g;
+            $command =~ s/\\n/;css_cssay /g;
+        }
 		&::printNotice("RCON", $command, 1);
 		$result = $rcon_obj->execute($command);
+
     } else {
 		&::printNotice("Rcon error: No Object available");
     }
@@ -423,15 +427,20 @@ sub dorcon_multi
 	my ($self, @commands)      = @_;
     my $result;
     my $rcon_obj = $self->{rcon_obj};
+
 	if (($rcon_obj) && ($::g_rcon == 1) && ($self->{rcon} ne "")) {
 		if ($self->{game_engine} > 1)
 		{
 			my $fullcmd = "";
 			foreach (@commands)
 			{
-				# replace ; to avoid executing multiple rcon commands.
-				my $cmd = $_;
-				$cmd =~ s/;//g;
+                my $cmd = $_;
+                # replace ; to avoid executing multiple rcon commands.
+	            $cmd =~ s/;//g;
+                if ($self->{mod} eq "CSS") {
+                    $cmd =~ s/"\d+"//g;
+                    $cmd =~ s/\\n/;css_cssay /g;
+                }
 				$fullcmd .="$cmd;";
 			}
 			&::printNotice("RCON", $fullcmd, 1);
@@ -618,7 +627,9 @@ sub dostats
 			if ($self->{total_kills} > 0) {
 				$hpk = sprintf("%.2f", (100/$self->{total_kills})*$self->{total_headshots});
 			}  
-			if ($rcmd ne "") {
+            if ( $self->{mod} eq "CSS" ) {
+                 $self->dorcon("css_cssay ".$self->quoteparam("HLstats{red}Z{default} - Tracking ".&::number_format($self->{players})." players with ".&::number_format($self->{total_kills})." kills and ".&::number_format($self->{total_headshots})." headshots ($hpk%)"));
+			} elsif ($rcmd ne "") {
 				$self->dorcon("$rcmd ".$self->quoteparam("HLstatsX:CE - Tracking ".&::number_format($self->{players})." players with ".&::number_format($self->{total_kills})." kills and ".&::number_format($self->{total_headshots})." headshots ($hpk%)"));
 			} else {
 				$self->messageAll("HLstatsX:CE - Tracking ".&::number_format($self->{players})." players with ".&::number_format($self->{total_kills})." kills and ".&::number_format($self->{total_headshots})." headshots ($hpk%)");
@@ -1243,14 +1254,14 @@ sub update_server_loc
     my $server_ip   = $self->{address};
 	my $publicaddress = $self->{publicaddress};
 
-	if ($publicaddress =~ /^(\d+\.\d+\.\d+\.\d+)/) {
-		$server_ip = $publicaddress;
-	} elsif ($publicaddress =~ /^([0-9a-zA-Z\-\.]+)\:*.*/) {
-		my $hostip = inet_aton($1);
-		if ($hostip) {
-			$server_ip = inet_ntoa($hostip);
-		}
-	}
+	#if ($publicaddress =~ /^(\d+\.\d+\.\d+\.\d+)/) {
+	#	$server_ip = $publicaddress;
+	#} elsif ($publicaddress =~ /^([0-9a-zA-Z\-\.]+)\:*.*/) {
+	#	my $hostip = inet_aton($1);
+	#	if ($hostip) {
+	#		$server_ip = inet_ntoa($hostip);
+	#	}
+	#}
 	my $found = 0;
 	my $servcity = undef;
 	my $servcountry = undef;
@@ -1282,7 +1293,7 @@ sub update_server_loc
 			$latitude = $geoLocationRec->latitude();
 			$longitude = $geoLocationRec->longitude();
 		}			
-		
+
 		if ($longitude) {
 
 			$found++;
@@ -1362,6 +1373,10 @@ sub messageAll
 			}
 			$self->messageMany($msg, 1, @userlist);
 		}
+        elsif ($self->{mod} eq "CSS")
+        {
+            $self->dorcon("css_cssay ".$msg);
+        }            
 		else
 		{
 			$self->dorcon("say ".$msg);
@@ -1387,6 +1402,7 @@ sub messageMany
 			{
 				$color = " 2";
 			}
+            
 			$self->dorcon($self->{player_command}." \"$usersendlist\"$color ".$self->quoteparam($msg));
 		}
 		elsif ($self->{mod} eq "AMXX")

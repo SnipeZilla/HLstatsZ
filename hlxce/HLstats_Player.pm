@@ -662,7 +662,8 @@ sub flushDB
 
 	my $is_bot = $self->{is_bot};
     my $server_address = $self->{server};
-	if (($is_bot == 1) && ($::g_servers{$server_address}->{ignore_bots} == 1)) {
+	#if (($is_bot == 1) && ($::g_servers{$server_address}->{ignore_bots} == 1)) {
+	if ($is_bot == 1) {
 		# Update player details
 		my $query = "
 			UPDATE

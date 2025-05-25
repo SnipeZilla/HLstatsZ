@@ -82,6 +82,7 @@ sub execute
 {
   my ($self, $command, $splitted_answer) = @_;
   if ($::g_stdin == 0) {
+      
     my $answer = $self->sendrecv($command, $splitted_answer);
     if ($answer =~ /bad rcon_password/i) {
       &::printEvent("TRCON", "Bad Password");
@@ -116,7 +117,7 @@ sub get_auth_code
 sub sendrecv
 {
   my ($self, $msg, $splitted_answer) = @_;
-  
+
   my $rs_counter = $self->{"refresh_socket_counter"};
   if ($rs_counter % $REFRESH_SOCKET_COUNTER_LIMIT == 0)  {
     if ($self->{"rcon_socket"} > 0) {

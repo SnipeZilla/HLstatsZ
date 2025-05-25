@@ -1057,12 +1057,43 @@ sub doEvent_Frag
 	
 	my $headshotFromAction = 0;
 
+	if (($g_servers{$s_addr}->{ignore_bots} == 1) && ((($killer->{is_bot} == 1) && ($victim->{is_bot} == 0)) || (($killer->{is_bot} == 0) && ($victim->{is_bot} == 1))) ) {
+		$desc = "(IGNORED) BOT: ";
+        my $msg = "";
+        $k_name = $killer->{name};
+		$v_name = $victim->{name};
+        $kbot   = $killer->{is_bot} == 1?"[BOT]":"";
+        $vbot   = $victim->{is_bot} == 1?"[BOT]":"";
+        my $k_userid  = $g_servers{$s_addr}->format_userid($killer->{"userid"});
+		my $v_userid  = $g_servers{$s_addr}->format_userid($victim->{"userid"});
+		my $colorparam = $g_servers{$s_addr}->{format_color};
+         if ( $g_servers{$s_addr}->{"mod"} eq "CSS" ) {
+             my $killer_color = $killer->{team} eq "CT"? $g_servers{$s_addr}->{"color_ct"}:$g_servers{$s_addr}->{"color_t"};
+             my $victim_color = $killer->{team} eq "CT"? $g_servers{$s_addr}->{"color_t"}:$g_servers{$s_addr}->{"color_ct"}; 
+         	$msg = sprintf("{%s}%s%s{default} (%s) killed {%s}%s%s{default}",$killer_color,$kbot,$k_name,&number_format($killer->{skill}),$victim_color,$vbot,$v_name);
+         } else {
+             $msg = sprintf("%s%s (%s) killed %s%s",$kbot,$k_name,&number_format($killer->{skill}),$vbot,$v_name);
+         }
+         my @rcmds;print $killer->{userid}."\n".$killer->{playerid}."\n";
+         if (($killer->{is_bot} == 0) && ($killer->{"display_events"} == 1) && ($killer->{playerid} > 0)) {
+         	push(@rcmds, sprintf("%s %s%s %s",$rcmd,$k_userid,$colorparam,$g_servers{$s_addr}->quoteparam($msg)));
+         }  
+         if (($victim->{is_bot} == 0) && ($victim->{"display_events"} == 1) && ($g_servers{$s_addr}->{play_game} != L4D()) && ($victim->{playerid} > 0) && $isfake == 0) {
+         	push(@rcmds, sprintf("%s %s%s %s",$rcmd,$v_userid,$colorparam,$g_servers{$s_addr}->quoteparam($msg)));
+         }
+         if (@rcmds) {
+         
+         	$g_servers{$s_addr}->dorcon_multi(@rcmds);
+         }
+	}
+        
 	if (($g_servers{$s_addr}->{num_trackable_players} < $g_servers{$s_addr}->{minplayers}) && $g_servers{$s_addr}->{play_game} != L4D()) {
 		$desc = "(IGNORED) NOTMINPLAYERS: ";
 	} elsif (checkBonusRound()) {
 		$desc = "(IGNORED) BonusRound: ";
 	} elsif ($killer && $victim) {
 		if (($g_servers{$s_addr}->{ignore_bots} == 1) && (($killer->{is_bot} == 1) || ($victim->{is_bot} == 1))) {
+        print "ok\n";
 			$desc = "(IGNORED) BOT: ";
 		} elsif ($g_servers{$s_addr}->{play_game} == L4D() && $killer->{team} eq "Infected" && $victim->{team} eq "Infected") {
 			$desc = "(IGNORED) L4D Infected TK: ";
@@ -1260,6 +1291,10 @@ sub doEvent_Frag
 					my $msg = "";
 					if ($g_servers{$s_addr}->{play_game} == L4D()) {
 						$msg = sprintf("%s (%s)%s got %s points for killing %s",$k_name,&number_format($killerskill),$killer_add_text,$k_skill,$v_name);
+                    } elsif ( $g_servers{$s_addr}->{"mod"} eq "CSS" ) {
+                        my $killer_color = $killer->{team} eq "CT"? $g_servers{$s_addr}->{"color_ct"}:$g_servers{$s_addr}->{"color_t"};
+                        my $victim_color = $killer->{team} eq "CT"? $g_servers{$s_addr}->{"color_t"}:$g_servers{$s_addr}->{"color_ct"}; 
+						$msg = sprintf("{%s}%s{default} (%s)%s got %s points%s for killing {%s}%s{default} (%s)%s",$killer_color,$k_name,&number_format($killerskill),$killer_add_text,$k_skill,$v_skill_text,$victim_color,$v_name,&number_format($victimskill),$victim_add_text);
 					} else {
 						$msg = sprintf("%s (%s)%s got %s points%s for killing %s (%s)%s",$k_name,&number_format($killerskill),$killer_add_text,$k_skill,$v_skill_text,$v_name,&number_format($victimskill),$victim_add_text);
 					}
@@ -1273,7 +1308,7 @@ sub doEvent_Frag
 							
 						}
 					}  
-					if (($victim->{is_bot} == 0) && ($victim->{"display_events"} == 1) && ($g_servers{$s_addr}->{play_game} != L4D()) && ($victim->{userid} > 0) && $isfake == 0) {
+					if (($victim->{is_bot} == 0) && ($victim->{"display_events"} == 1) && ($g_servers{$s_addr}->{play_game} != L4D()) && ($victim->{playerid} > 0) && $isfake == 0) {
 						push(@rcmds, sprintf("%s %s%s %s",$rcmd,$v_userid,$colorparam,$g_servers{$s_addr}->quoteparam($msg)));
 					}
 					if (@rcmds) {
@@ -1582,20 +1617,26 @@ sub doEvent_PlayerPlayerAction
 								$verb = "got";
 							}
 							my $colorparam = $g_servers{$s_addr}->{format_color};
-							my $coloraction = $g_servers{$s_addr}->{format_action};
-							my $colorend = $g_servers{$s_addr}->{format_actionend};
+							my $coloraction = $g_servers{$s_addr}->{"mod"} eq "CSS"?"{green}":$g_servers{$s_addr}->{format_action};
+							my $colorend  = $g_servers{$s_addr}->{"mod"} eq "CSS"?"{default}":$g_servers{$s_addr}->{format_actionend};
 							my $p_name    = $player->{name};
 							my $p_skill   = $player->{skill};
 							my $v_name    = $victim->{name};
 							my $v_skill   = $victim->{skill};
-							my $msg = sprintf("%s %s %s points (%s) for %s%s%s against %s (%s)",$p_name,$verb,abs($reward_player), &number_format($p_skill),$coloraction,$actionname,$colorend, $v_name, &number_format($v_skill));
+                            if ($g_servers{$s_addr}->{"mod"} eq "CSS") {
+                                my $player_color = $player->{team} eq "CT"? $g_servers{$s_addr}->{"color_ct"}:$g_servers{$s_addr}->{"color_t"};
+                                my $victim_color = $player->{team} eq "CT"? $g_servers{$s_addr}->{"color_t"}:$g_servers{$s_addr}->{"color_ct"};
+							    my $msg = sprintf("{%s}%s{default} %s %s points (%s) for %s%s%s against {%s}%s{default} (%s)",$player_color,$p_name,$verb,abs($reward_player), &number_format($p_skill),$coloraction,$actionname,$colorend,$victim_color, $v_name, &number_format($v_skill));
+                            } else {
+                                my $msg = sprintf("%s %s %s points (%s) for %s%s%s against %s (%s)",$p_name,$verb,abs($reward_player), &number_format($p_skill),$coloraction,$actionname,$colorend, $v_name, &number_format($v_skill));
+                            }
 							my @rcmds;
-							if (($player->{is_bot} == 0) && ($player->{display_events} == 1) && ($player->{userid} > 0)) {
+							if (($player->{is_bot} == 0) && ($player->{display_events} == 1) && ($player->{playerid} > 0)) {
 								my $p_userid  = $g_servers{$s_addr}->format_userid($player->{userid});
 								my $cmd_str = sprintf("%s %s%s %s",$rcmd,$p_userid,$colorparam,$g_servers{$s_addr}->quoteparam($msg));
 								push(@rcmds, $cmd_str);
 							}
-							if (($victim->{is_bot} == 0) && ($victim->{display_events} == 1) && ($victim->{userid} > 0)) {
+							if (($victim->{is_bot} == 0) && ($victim->{display_events} == 1) && ($victim->{playerid} > 0)) {
 								my $v_userid  = $g_servers{$s_addr}->format_userid($victim->{userid});
 								my $cmd_str = sprintf("%s %s%s %s",$rcmd,$v_userid,$colorparam,$g_servers{$s_addr}->quoteparam($msg));
 								push(@rcmds, $cmd_str);
@@ -1843,15 +1884,16 @@ sub doEvent_PlayerAction
 				if (($g_servers{$s_addr}->{broadcasting_events} == 1) && ($reward_player != 0)) {
 					if ($g_servers{$s_addr}->{broadcasting_player_actions} == 1) {
 						my $p_userid  = $g_servers{$s_addr}->format_userid($player->{userid});
-						if (($player->{is_bot} == 0) && ($player->{display_events} == 1) && ($player->{userid} > 0)) {
-							my $colorparam = $g_servers{$s_addr}->{format_color};
-							my $coloraction = $g_servers{$s_addr}->{format_action};
+						if (($player->{is_bot} == 0) && ($player->{display_events} == 1) && ($player->{playerid} > 0)) {
+							my $colorparam = $g_servers{$s_addr}->{"mod"} eq "CSS"?"{default}":$g_servers{$s_addr}->{format_color};
+							my $coloraction = $g_servers{$s_addr}->{"mod"} eq "CSS"?"{green}":$g_servers{$s_addr}->{format_action};
+                            my $player_color = $player->{team} eq "CT"? $g_servers{$s_addr}->{"color_ct"}:$g_servers{$s_addr}->{"color_t"};
 							if ($reward_player !=0) {
 								my $verb = "got";
 								if ($reward_player < 0) {
 									$verb = "lost";
 								}
-								my $msg = sprintf("%s %s %s points (%s) for %s%s", $p_name, $verb, abs($reward_player),&number_format($p_skill),$coloraction,$actionname);
+								my $msg = sprintf("{%s}%s{default} %s %s points (%s) for %s%s", $player_color,$p_name, $verb, abs($reward_player),&number_format($p_skill),$coloraction,$actionname);
 								my $cmd_str = sprintf("%s %s%s %s",$rcmd,$p_userid,$colorparam,$g_servers{$s_addr}->quoteparam($msg));
 								$g_servers{$s_addr}->dorcon($cmd_str);
 							}
@@ -2005,7 +2047,11 @@ sub doEvent_WorldAction
 			$g_servers{$s_addr}->set("lastdisabledbonus", $ev_remotetime);
 			$g_servers{$s_addr}->set("bonusroundtime_state", 1);
 			if ($act_players >= $min_players) {
-				$g_servers{$s_addr}->messageAll("Round Over - All actions/frags are ignored by HLstatsX:CE until the next round starts",0,1);
+                if ( $g_servers{$s_addr}->{"mod"} eq "CSS" ) {
+                    $g_servers{$s_addr}->messageAll("Round Over - All actions/frags are ignored by HLstats{red}Z{default} until the next round starts",0,1);
+                } else {
+				    $g_servers{$s_addr}->messageAll("Round Over - All actions/frags are ignored by HLstatsX:CE until the next round starts",0,1);
+                }
 			}
 		}
 
@@ -2187,42 +2233,43 @@ sub doEvent_Chat
 				my $lng  = $2;
 				my $region = "";
 			}
-		} elsif ($message =~ /^\/?hlx_hideranking$/i) {
-			my $result = &doQuery("
-				SELECT
-					hideranking
-				FROM
-					hlstats_Players
-				WHERE
-					playerId = " . $player->{playerid}
-			);
-			my ($hideranking) = $result->fetchrow_array;
-			$result->finish;
-			
-			my $hidedesc = "";
-			
-			if ($hideranking == 0) {
-				$hideranking = 1;
-				$hidedesc = "HIDDEN from";
-			} else {
-				$hideranking = 0;
-				$hidedesc = "VISIBLE on";
-			}
-			my $playerName = &abbreviate($player->{name});
-			&execNonQuery("
-				UPDATE
-					hlstats_Players
-				SET
-					hideranking='$hideranking'
-				WHERE
-					playerId=" . $player->{playerid}
-			);
-			
-			if ($player->{display_events} == 1) {
-				$cmd_str = $rcmd." $p_userid ".$g_servers{$s_addr}->quoteparam("'$playerName' is now $hidedesc the rankings");
-			}  
-			$g_servers{$s_addr}->dorcon($cmd_str);
 		}
+        #elsif ($message =~ /^\/?hlx_hideranking$/i) {
+		#	my $result = &doQuery("
+		#		SELECT
+		#			hideranking
+		#		FROM
+		#			hlstats_Players
+		#		WHERE
+		#			playerId = " . $player->{playerid}
+		#	);
+		#	my ($hideranking) = $result->fetchrow_array;
+		#	$result->finish;
+		#	
+		#	my $hidedesc = "";
+		#	
+		#	if ($hideranking == 0) {
+		#		$hideranking = 1;
+		#		$hidedesc = "HIDDEN from";
+		#	} else {
+		#		$hideranking = 0;
+		#		$hidedesc = "VISIBLE on";
+		#	}
+		#	my $playerName = &abbreviate($player->{name});
+		#	&execNonQuery("
+		#		UPDATE
+		#			hlstats_Players
+		#		SET
+		#			hideranking='$hideranking'
+		#		WHERE
+		#			playerId=" . $player->{playerid}
+		#	);
+		#	
+		#	if ($player->{display_events} == 1) {
+		#		$cmd_str = $rcmd." $p_userid ".$g_servers{$s_addr}->quoteparam("'$playerName' is now $hidedesc the rankings");
+		#	}  
+		#	$g_servers{$s_addr}->dorcon($cmd_str);
+		#}
 		
 		if (($message =~ /^\/?hlx_auto ([^ ]+) ([^ ]+)$/i) || ($message =~ /^\/?hlx_auto_cmd ([^ ]+) ([^ ]+)$/i)) {
 			my $type = lc($1);
@@ -2260,7 +2307,7 @@ sub doEvent_Chat
 				}
 			}
 		}
-		if ($message =~ /^\/?hlx_auto clear$/i) {
+		if ($message =~ /^\/?hlx_auto clear$/i  && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 			$player->{"auto_type"}    = "";
 			$player->{"auto_command"} = "";
 
@@ -2271,7 +2318,7 @@ sub doEvent_Chat
 		}
 
 		### Begin switching team balance
-		elsif ($message =~ /^\/?hlx_teams([ ][0-9])?$/i) {
+		elsif ($message =~ /^\/?hlx_teams([ ][0-9])?$/i  && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 			my $steamid  = $player->{uniqueid};
 			my $mode = -1;
 			if (($1 eq " 0") || ($1 eq " 1")) {
@@ -2305,7 +2352,7 @@ sub doEvent_Chat
 		}
 
 		### Disabling hlx output
-		elsif ($message =~ /^\/?hlx_display\s?([01])$/i) {
+		elsif ($message =~ /^\/?hlx_display\s?([01])$/i && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 			my $mode = 0;
 			$mode = $1;
 			
@@ -2321,7 +2368,7 @@ sub doEvent_Chat
 		}
 
 		### Disabling hlx global chat output
-		elsif ($message =~ /^\/?hlx_chat\s?([01])$/i) {
+		elsif ($message =~ /^\/?hlx_chat\s?([01])$/i && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 			my $mode = 0;
 			$mode = $1;
 			
@@ -2360,8 +2407,7 @@ sub doEvent_Chat
 			if ($error == 0) {
 				if ($message !~ /^\/?place([ ][0-9]+)?$/i) {
 					$rcmd = $g_servers{$s_addr}->{player_command_osd};
-					
-					if ($rcmd ne "") {
+					if ($rcmd ne "" && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 						my ($skill, $kills, $deaths, $kd, $suicides, $headshots, $hpk, $acc, $connection_time, $fav_weapon, $fav_weapon_kills, $fav_weapon_acc, $s_fav_weapon, $s_fav_weapon_kills, $s_fav_weapon_acc) = get_player_data($player, 0);
 						my $osd_string = get_menu_text($player, $skill, $kills, $deaths, $kd, $suicides, $headshots, $hpk, $acc, $connection_time, $fav_weapon, $fav_weapon_kills, $fav_weapon_acc, $s_fav_weapon, $s_fav_weapon_kills, $s_fav_weapon_acc, $ranknumber, $totalplayers);
 						$cmd_str = sprintf("%s \"15\" %s %s", $rcmd, $p_userid, $g_servers{$s_addr}->quoteparam($osd_string));
@@ -2425,7 +2471,7 @@ sub doEvent_Chat
 				}
 
 				if ($message !~ /^\/?kdeath([ ][0-9]+)?$/i) {
-					if ($g_servers{$s_addr}->{player_command_osd} ne "") {
+					if ($g_servers{$s_addr}->{player_command_osd} ne "" && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 						my $osd_string = get_menu_text($player, $skill, $kills, $deaths, $kd, $suicides, $headshots, $hpk, $acc, $connection_time, $fav_weapon, $fav_weapon_kills, $fav_weapon_acc, $s_fav_weapon, $s_fav_weapon_kills, $s_fav_weapon_acc, $ranknumber, $totalplayers);
 						$osd_string = $g_servers{$s_addr}->quoteparam($osd_string);
 						$cmd_str = sprintf("%s \"10\" %s %s", $g_servers{$s_addr}->{"player_command_osd"}, $p_userid, $osd_string);
@@ -2509,7 +2555,7 @@ sub doEvent_Chat
 				}
 				my $msg = sprintf("%s has %d:%d frags%s, %d headshots (%s%%),%s%s", $playerName, $kills, $deaths, $kdstring, $headshots, $hpk, $accstring, $pointstr);
 				if ($message !~ /^\/?session_data([ ][0-9]+)?$/i) {
-					if ($g_servers{$s_addr}->{player_command_osd} ne "") {
+					if ($g_servers{$s_addr}->{player_command_osd} ne "" && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 						my ($se_skill, $se_kills, $se_deaths, $se_kd, $se_suicides, $se_headshots, $se_hpk, $se_acc, $se_connection_time, $se_fav_weapon, $se_fav_weapon_kills, $se_fav_weapon_acc, $se_s_fav_weapon, $se_s_fav_weapon_kills, $se_s_fav_weapon_acc, $se_ranknumber, $se_totalplayers) = get_player_data($player, 1);
 						my $osd_string = get_menu_text($player, $se_skill, $se_kills, $se_deaths, $se_kd, $se_suicides, $se_headshots, $se_hpk, $se_acc, $se_connection_time, $se_fav_weapon, $se_fav_weapon_kills, $se_fav_weapon_acc, $se_s_fav_weapon, $se_s_fav_weapon_kills, $se_s_fav_weapon_acc, $se_ranknumber, $se_totalplayers);
 						$osd_string = $g_servers{$s_addr}->quoteparam($osd_string);
@@ -2540,7 +2586,7 @@ sub doEvent_Chat
 		### End of Session stats
 		
 		### status Addon
-		elsif ($message =~ /^\/?status([ ][0-9]+)?$/i) {
+		elsif ($message =~ /^\/?status([ ][0-9]+)?$/i  && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 			if ($g_servers{$s_addr}->{use_browser} > 0) {
 				my $url        = $g_servers{$s_addr}->{ingame_url};
 				my $server_id  = $g_servers{$s_addr}->{id};
@@ -2560,7 +2606,7 @@ sub doEvent_Chat
 		}
 
 		### load Addon
-		elsif ($message =~ /^\/?load$/i) {
+		elsif ($message =~ /^\/?load$/i && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 		if ($g_servers{$s_addr}->{use_browser} > 0) {
 			my $url        = $g_servers{$s_addr}->{ingame_url};
 			my $server_id  = $g_servers{$s_addr}->{id};
@@ -2577,7 +2623,7 @@ sub doEvent_Chat
 		}
 
 		### servers Addon
-		elsif ($message =~ /^\/?servers$/i) {
+		elsif ($message =~ /^\/?servers$/i && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 			if ($g_servers{$s_addr}->{use_browser} > 0) {
 				my $url        = $g_servers{$s_addr}->{ingame_url};
 				my $game       = $g_servers{$s_addr}->{game};
@@ -2594,7 +2640,7 @@ sub doEvent_Chat
 
 		### cheaters Addon
 		elsif ($message =~ /^\/?cheaters$/i || $message =~ /^\/?bans$/i) {
-			if ($g_servers{$s_addr}->{use_browser} > 0)  {
+			if ($g_servers{$s_addr}->{use_browser} > 0 && $g_servers{$s_addr}->{"mod"} ne "CSS")  {
 				my $url        = $g_servers{$s_addr}->{ingame_url};
 				my $game       = $g_servers{$s_addr}->{game};
 				my $fullurl = $g_servers{$s_addr}->quoteparam(sprintf("%s/ingame.php?game=%s&mode=bans", $url, $game));
@@ -2610,14 +2656,14 @@ sub doEvent_Chat
 
 		### Actions Addon
 		elsif (($message =~ /^\/?action$/i) || ($message =~ /^\/?actions$/i)) {
-			if ($g_servers{$s_addr}->{use_browser} > 0)  {
+			if ($g_servers{$s_addr}->{use_browser} > 0 && $g_servers{$s_addr}->{"mod"} ne "CSS")  {
 				my $p_playerid = $player->{playerid};
 				my $url        = $g_servers{$s_addr}->{ingame_url};
 				my $game       = $g_servers{$s_addr}->{game};
 				my $fullurl = $g_servers{$s_addr}->quoteparam(sprintf("%s/ingame.php?game=%s&mode=actions&player=%s", $url, $game, $p_playerid));
 				my $browsecmd = $g_servers{$s_addr}->{browse_command};
 
-				if ($g_servers{$s_addr}->{mod} eq "BEETLE") {
+				if ($g_servers{$s_addr}->{"mod"} eq "BEETLE") {
 					$cmd_actions = sprintf("%s %s say %s %s", $g_servers{$s_addr}->{exec_command}, $p_userid, $browsecmd, $fullurl);
 				} else {
 					$cmd_actions = sprintf("%s %s %s", $browsecmd, $p_userid, $fullurl);
@@ -2627,7 +2673,7 @@ sub doEvent_Chat
 		}
 
 		### Accuracy Addon
-		elsif ($message =~ /^\/?accuracy$/i) {
+		elsif ($message =~ /^\/?accuracy$/i && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 			if ($g_servers{$s_addr}->{use_browser} > 0) {
 				my $p_playerid = $player->{playerid};
 				my $url        = $g_servers{$s_addr}->{ingame_url};
@@ -2645,7 +2691,7 @@ sub doEvent_Chat
 
 		### Targets Addon
 		elsif (($message =~ /^\/?targets$/i) || ($message =~ /^\/?target$/i)) {
-			if ($g_servers{$s_addr}->{use_browser} > 0)  {
+			if ($g_servers{$s_addr}->{use_browser} > 0 && $g_servers{$s_addr}->{"mod"} ne "CSS")  {
 				my $p_playerid = $player->{playerid};
 				my $url        = $g_servers{$s_addr}->{ingame_url};
 				my $game       = $g_servers{$s_addr}->{game};
@@ -2661,7 +2707,7 @@ sub doEvent_Chat
 		}
 
 		### Clans Addon
-		elsif ($message =~ /^\/?clans$/i) {
+		elsif ($message =~ /^\/?clans$/i && $g_servers{$s_addr}->{"mod"} ne "CSS") {
 			if ($g_servers{$s_addr}->{use_browser} > 0)  {
 				my $url        = $g_servers{$s_addr}->{ingame_url};
 				my $game       = $g_servers{$s_addr}->{game};
@@ -2696,7 +2742,14 @@ sub doEvent_Chat
 			} else {
 				$limit = $1;
 			}
-			if ($g_servers{$s_addr}->{player_command_osd} ne "") {
+            if ( $g_servers{$s_addr}->{"mod"} eq "CSS" ) {
+                if ( $g_servers{$s_addr}->{"hlstats_url"} ne "" ) {
+                   my $website = $g_servers{$s_addr}->{"hlstats_url"};
+                      $website =~ s/\//\\/g; # could't find another way
+                   my $osd_message = sprintf("css_cssay HLstats{red}Z{default}: Full stats and ranking -> {green}%s{default}", $website);
+                   $g_servers{$s_addr}->dorcon($osd_message);
+                }
+			} elsif ($g_servers{$s_addr}->{player_command_osd} ne "") {
 				my $result = &doQuery("
 					SELECT
 						$g_ranktype, lastName, 
@@ -2724,7 +2777,7 @@ sub doEvent_Chat
 					if (length($lastName) > 20) {
 						$lastName = substr($lastName, 0, 17)."...";
 					}
-					if ($last_base eq "") {
+                    if ($last_base eq "") {
 						$osd_message .= sprintf("   %02d  %s%s       -      %s", $i, &number_format($base), $rankword, $lastName)."\\n";
 						$last_base   =  $base;
 					} else {

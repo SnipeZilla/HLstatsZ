@@ -1758,6 +1758,17 @@ sub readDatabaseConfig()
 		if (!defined($g_config_servers{$addr}{"DefaultDisplayEvents"})) {
 			$g_config_servers{$addr}{"DefaultDisplayEvents"}			= 1;
 		}
+        #Only one working for CS2 is css_cssay
+        if ( $g_config_servers{$addr}{"Mod"} eq "CSS" ) {
+            $g_config_servers{$addr}{"BroadCastEventsCommandAnnounce"}="css_cssay";
+            $g_config_servers{$addr}{"BroadCastEventsCommand"}="css_cssay";
+            $g_config_servers{$addr}{"PlayerEventsCommandOSD"}="css_cssay";
+            $g_config_servers{$addr}{"PlayerEventsCommandHint"}="css_cssay";
+            $g_config_servers{$addr}{"PlayerEventsCommand"}="css_cssay";
+            $g_config_servers{$addr}{"color_ct"}="lightblue";
+            $g_config_servers{$addr}{"color_t"}="gold";
+            $g_config_servers{$addr}{"color_action"}="green";
+        }
 	}
 
 	&printEvent("CONFIG", "I have found the following server configs in database:", 1);
@@ -2350,6 +2361,13 @@ while ($loop = &getLine()) {
 				}
 
 				$g_servers{$s_addr}->set("mod", $s_cfg{"Mod"});
+                
+                # CS2: some colors for the chat
+                if ( $g_servers{$s_addr}->{mod} eq "CSS" ) {
+                   $g_servers{$s_addr}{"color_ct"}="lightblue";
+                   $g_servers{$s_addr}{"color_t"}="gold";
+                   $g_servers{$s_addr}{"color_action"}="green";
+                }
 				
 				if ($s_cfg{"Mod"} ne "") {
 					&printEvent("SERVER", "Using plugin ".$s_cfg{"Mod"}." for internal functions!", 1);
