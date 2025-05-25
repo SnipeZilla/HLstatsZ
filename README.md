@@ -8,6 +8,6 @@ HLstatsZ uses these scripts:<br>
 &nbsp;OpenStreetMap(leaflet)<br>
 
 Plugin for HLX to properly works with CS2:<br>
-https://github.com/daffyyyy/CS2-SimpleAdmin<br>
-(Use of css_cssay to print)<br>
-And Hlstatsx mod = CSS
+https://github.com/daffyyyy/CS2-SimpleAdmin (Use of css_cssay to print)<br>
+https://github.com/startersclan/source-udp-forwarder (logs)<br>
+And set Hlstatsx mod to CSS (instead of SOURCEMOD)<br>
