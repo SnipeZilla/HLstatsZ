@@ -6,3 +6,8 @@ HLstatsZ uses these scripts:<br>
 &nbsp;DataTables<br>
 &nbsp;ApexChartS<br>
 &nbsp;OpenStreetMap(leaflet)<br>
+
+Plugin for HLX to properly works with CS2:<br>
+https://github.com/daffyyyy/CS2-SimpleAdmin<br>
+(Use of css_cssay to print)<br>
+And Hlstatsx mod = CSS
