@@ -43,26 +43,33 @@ if ( $query ) {
         
         //connected
         if ( !empty($fp) ) {
+
             //Request AS_2INFO
             @fwrite($fp, $req, $ln);
             //Response
             stream_set_timeout($fp, 2);
             $data = @fread ($fp, 1400) ;
             $response   = substr($data, 4, 1);
+            fclose($fp);
+
             if ( $response == $challenge || $response == $resp ) {
 
                 $ping[$SIDs[$i]]='online'; // Online
 
             } else {
 
-                $ping[$SIDs[$i]]='warning'; // Online but no response
+                $fp = fsockopen($ip, $port, $errno, $errstr, 1);
+
+                if ( !empty($fp) ) {
+                    
+                    fclose($fp);
+                    $ping[$SIDs[$i]]='warning'; // Online but no response
+
+                } else { $ping[$SIDs[$i]]='offline'; } // Offline
 
             }
 
         } else { $ping[$SIDs[$i]]='offline'; } // Offline
-
-        // close
-        fclose($fp);
 
     }
 
