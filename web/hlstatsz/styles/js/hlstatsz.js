@@ -949,28 +949,19 @@ const hlz={
 
     },
     ping: function(e){
-        //document.querySelectorAll('#servers tbody tr').forEach(el => {
+
         document.querySelectorAll('tr[data-server]').forEach(el => {
             var sid   = el.getAttribute('data-server').split('-')[1],
                 title = '';
-            hlz.$.status += 1;
-            el.getElementsByTagName("td")[9].querySelector('div').className = 'status '+e['ping'][sid];
-
-            if ( e['ping'][sid] == 'online' ) { title='Online'; hlz.$.status -= 1; }
-            if ( e['ping'][sid] == 'warning' ) { title='Online but did not respond...'; }
-            if ( e['ping'][sid] == 'offline' ) { title='Offline'; }
-
-            el.getElementsByTagName("td")[9].querySelector('div').setAttribute('title',title);
-
+            if ( e['ping'][sid] ) {
+                el.getElementsByTagName("td")[9].querySelector('div').className = 'status '+e['ping'][sid];
+                if ( e['ping'][sid] == 'online' ) { title='Online'; }
+                if ( e['ping'][sid] == 'warning' ) { title='Online but did not respond...'; }
+                if ( e['ping'][sid] == 'offline' ) { title='Offline'; }
+                el.getElementsByTagName("td")[9].querySelector('div').setAttribute('title',title);
+            }
         });
-        if ( hlz.$.status > 0 ) {
 
-            hlz.$.status=0;
-            setTimeout( () => {
-                hlz.ajax(hlz.url.ping+'?query=1&IPs='+JSON.stringify(hlz.$.IPs)+'&SIDs='+JSON.stringify(hlz.$.SIDs));
-            }, 5 * 60 * 1000 );
-
-        }
     },
     players: function(e,url,data){
 
