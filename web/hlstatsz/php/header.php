@@ -13,13 +13,13 @@ $url=Url().$dirname;
         <meta name="token" content="<?= $_SESSION['token'] ?>">
         <meta name="viewport" content="width=device-width">
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
-		<link rel="shortcut icon" type="image/png" href="styles/css/images/Z.png">
-		<link rel="stylesheet" type="text/css" href="styles/css/datatables.min.css">
+		<link rel="shortcut icon" type="image/png" href="styles/css/images/Z.png<?='?'.$version?>">
+		<link rel="stylesheet" type="text/css" href="styles/css/datatables.min.css<?='?'.$version?>">
 		<link rel="stylesheet" type="text/css" href="styles/css/leaflet.css<?='?'.$version?>">
-		<link rel="stylesheet" type="text/css" href="styles/css/hlstatsz.min.css">
-		<script type="text/javascript" src="styles/js/datatables.min.js"></script>
-		<script type="text/javascript" src="styles/js/apexcharts.min.js"></script>
-		<script type="text/javascript" src="styles/js/leaflet.js"></script>
+		<link rel="stylesheet" type="text/css" href="styles/css/hlstatsz.min.css<?='?'.$version?>">
+		<script type="text/javascript" src="styles/js/datatables.min.js<?='?'.$version?>"></script>
+		<script type="text/javascript" src="styles/js/apexcharts.min.js<?='?'.$version?>"></script>
+		<script type="text/javascript" src="styles/js/leaflet.js<?='?'.$version?>"></script>
 		<script type="text/javascript" src="styles/js/hlstatsz.min.js<?='?'.$version?>"></script>
         <?php
         if (!empty(GOOGLE)) {
