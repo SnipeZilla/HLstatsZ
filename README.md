@@ -11,3 +11,6 @@ Plugin for HLX to properly works with CS2:<br>
 https://github.com/daffyyyy/CS2-SimpleAdmin (Use of css_cssay to print)<br>
 https://github.com/startersclan/source-udp-forwarder (logs)<br>
 And set Hlstatsx mod to CSS (instead of SOURCEMOD)<br>
+
+Test in game and see it here:<br>
+https://snipezilla.com/hlstatsz/
