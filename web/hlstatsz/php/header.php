@@ -1,7 +1,7 @@
 <?php
 require_once 'php/require/session.php';
 include 'php/games.php';
-$version="0.2.3";
+$version="0.2.4";
 $dirname=dirname($_SERVER['PHP_SELF']).'/';
 $url=Url().$dirname;
 ?>
