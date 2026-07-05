@@ -100,6 +100,25 @@ function steamAuthIsTrustedReturnTo($url)
         && steamAuthNormalizeQuery($returnToQuery) === steamAuthNormalizeQuery($expectedQuery);
 }
 
+// Per-admin Steam login (updater/91.php adds hlstats_Users.steamid64):
+// true if this SteamID64 belongs to an admin row, or matches the legacy
+// single-admin STEAM_ADMIN constant as a bootstrap fallback for sites
+// upgrading before they've assigned steamid64 to an admin row.
+function steamAuthIsAdmin($steamId64)
+{
+    global $db;
+
+    $db->query("SELECT 1 FROM hlstats_Users WHERE steamid64='" . $db->escape($steamId64) . "' LIMIT 1");
+    $isAdmin = $db->num_rows() == 1;
+    $db->free_result();
+
+    if (!$isAdmin && defined('STEAM_ADMIN') && !empty(STEAM_ADMIN)) {
+        $isAdmin = STEAM_ADMIN === $steamId64;
+    }
+
+    return $isAdmin;
+}
+
 function steamAuthSignPayload(array $steam)
 {
     $payload = array(
@@ -262,7 +281,7 @@ if ( isset($_GET['openid_assoc_handle']) ) {
             
                 $_SESSION['ID64']=$steam['ID64'];
                 myCookie('steam', steamAuthCookieValue($steam), time()+(24*3600));
-                $admin= STEAM_ADMIN === $steam['ID64'] ? '<a href="?mode=admin">admin</a>' : '';
+                $admin= steamAuthIsAdmin($steam['ID64']) ? '<a href="?mode=admin">admin</a>' : '';
                 $updatedQuery = updateQueryKey(['signout' => 'true']);
                 $baseUrl = $_SERVER['PHP_SELF'].'?'.$updatedQuery;
                 return $admin.'<a href="'.$baseUrl.'">sign out</a><a href="?mode=search&q='.$steam['ID64'].

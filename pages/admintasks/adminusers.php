@@ -21,6 +21,7 @@ if ( !defined('IN_HLSTATS') ) { die('Do not access this file directly'); }
 
 	$edlist = new EditList("username", "hlstats_Users", "user", false);
 	$edlist->columns[] = new EditListColumn("username", "Username", 15, true, "text", "", 16);
+	$edlist->columns[] = new EditListColumn("steamid64", "Steam ID64", 20, false, "text", "", 20);
 	$edlist->columns[] = new EditListColumn("password", "Password", 15, true, "password", "", 16);
 	$edlist->columns[] = new EditListColumn("acclevel", "Access Level", 25, true, "select", "0/No Access;80/Restricted;100/Administrator");
 echo '<div class="panel">';
@@ -42,6 +43,10 @@ Usernames and passwords can be set up for access to this HLstats Admin area. For
 Some sites may however need to give administration access to several people.
 </p>
 <p>
+<b>Steam ID64</b><br>
+Set an admin's SteamID64 (e.g. 76561198012345678) to let them sign in with "Sign in with Steam" instead of a password. Each admin keeps their own Access Level either way. Leave blank to require the password login for that user.
+</p>
+<p>
 <b>Note</b><br>
 Passwords are encrypted in the database and so cannot be viewed. However, you can change a user's password by entering a new plain text value in the Password field.
 </p>
@@ -57,6 +62,7 @@ Passwords are encrypted in the database and so cannot be viewed. However, you ca
 	$result = $db->query("
 		SELECT
 			username,
+			steamid64,
 			IF(password='','','(encrypted)') AS password,
 			acclevel
 		FROM

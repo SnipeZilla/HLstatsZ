@@ -45,31 +45,79 @@ class Auth
 
     function __construct()
     {
-        if (isset($_SESSION['ID64']) && defined('STEAM_ADMIN') && $_SESSION['ID64'] == STEAM_ADMIN) {
-            $this->ok = true;
-            $this->error = false;
-            $this->session = true;
-            $this->username = 'SteamAdmin';
-            $this->userdata['acclevel'] = 100;
-			if (empty($_SESSION['loggedin']) || ($_SESSION['username'] ?? '') !== $this->username || (int) ($_SESSION['acclevel'] ?? 0) !== 100) {
-				startAdminSession(array(
-					'loggedin' => 1,
-					'username' => $this->username,
-					'acclevel' => 100,
-					'authsessionStart' => time(),
-				));
-			} else {
-				$_SESSION['acclevel'] = 100;
-			}
-            return;
+        global $db;
+
+        // Per-admin Steam login: hlstats_Users.steamid64 (added in
+        // updater/91.php) is looked up against the Steam OpenID session
+        // set by signin.php, so each admin signs in with their own Steam
+        // account and keeps their own acclevel (Restricted/Admin) instead
+        // of everyone sharing one hardcoded STEAM_ADMIN.
+        if (isset($_SESSION['ID64'])) {
+            $db->query("
+                SELECT
+                    username,
+                    acclevel
+                FROM
+                    hlstats_Users
+                WHERE
+                    steamid64='" . $db->escape($_SESSION['ID64']) . "'
+                LIMIT 1
+            ");
+
+            if ($db->num_rows() == 1) {
+                $row = $db->fetch_array();
+                $db->free_result();
+
+                $this->ok = true;
+                $this->error = false;
+                $this->session = true;
+                $this->username = $row['username'];
+                $this->userdata['acclevel'] = (int) $row['acclevel'];
+
+                if (empty($_SESSION['loggedin']) || ($_SESSION['username'] ?? '') !== $this->username || (int) ($_SESSION['acclevel'] ?? 0) !== (int) $row['acclevel']) {
+                    startAdminSession(array(
+                        'loggedin' => 1,
+                        'username' => $this->username,
+                        'acclevel' => (int) $row['acclevel'],
+                        'authsessionStart' => time(),
+                    ));
+                } else {
+                    $_SESSION['acclevel'] = (int) $row['acclevel'];
+                }
+                return;
+            }
+            $db->free_result();
+
+            // Legacy bootstrap: STEAM_ADMIN (single hardcoded SteamID64,
+            // pre-per-admin-login behaviour) still grants full access if
+            // no hlstats_Users row claims this SteamID64 yet. Keeps
+            // upgrading sites from locking themselves out before they've
+            // assigned steamid64 to an admin row via Admin -> Admin Users.
+            if (defined('STEAM_ADMIN') && !empty(STEAM_ADMIN) && $_SESSION['ID64'] == STEAM_ADMIN) {
+                $this->ok = true;
+                $this->error = false;
+                $this->session = true;
+                $this->username = 'SteamAdmin';
+                $this->userdata['acclevel'] = 100;
+                if (empty($_SESSION['loggedin']) || ($_SESSION['username'] ?? '') !== $this->username || (int) ($_SESSION['acclevel'] ?? 0) !== 100) {
+                    startAdminSession(array(
+                        'loggedin' => 1,
+                        'username' => $this->username,
+                        'acclevel' => 100,
+                        'authsessionStart' => time(),
+                    ));
+                } else {
+                    $_SESSION['acclevel'] = 100;
+                }
+                return;
+            }
         }
-        elseif (defined('STEAM_API') && !empty(STEAM_API) &&
-                defined('STEAM_ADMIN') && !empty(STEAM_ADMIN)) {
-            clearAdminSession();
-            header("Location: ".$_SERVER['PHP_SELF']);
-            exit();
-        }
-        elseif (isset($_POST['authusername']) && isset($_POST['authpassword'])) {
+
+        // No Steam-authenticated admin match above — fall through to the
+        // classic username/password login. This used to be unreachable
+        // once STEAM_API/STEAM_ADMIN were configured; now it's a real
+        // fallback for admins without (or not yet using) Steam login.
+        if (isset($_POST['authusername']) && isset($_POST['authpassword'])) {
             $this->username = valid_request($_POST['authusername'] ?? '', false);
             $this->password = valid_request($_POST['authpassword'] ?? '', false);
             $this->savepass = valid_request(isset($_POST['authsavepass'])?$_POST['authsavepass']:0, false);
