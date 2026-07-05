@@ -242,7 +242,7 @@ message("warning","Options with an asterisk (*) beside them require a restart of
 
 	$optiongroups[60] = new OptionGroup('Proxy Settings');
 	$optiongroups[60]->options[] = new Option('Proxy_Key', '*Key to use when sending remote commands to Daemon, empty for disable', 'text');
-	$optiongroups[60]->options[] = new Option('Proxy_Daemons', '*List of daemons to send PROXY events from (used by <b>proxy-daemon.pl</b>), use "," as delimiter, eg &lt;ip&gt;:&lt;port&gt;,&lt;ip&gt;:&lt;port&gt;,... ', 'text');
+	$optiongroups[60]->options[] = new Option('Proxy_Daemons', '*List of daemons to send PROXY events from (used for <b>Daemon Control</b> and <b>proxy-daemon.pl</b>), <br>use "," as delimiter, eg &lt;ip&gt;:&lt;port&gt;,&lt;ip&gt;:&lt;port&gt;,... ', 'text');
     
 	if (!empty($_POST))
 	{

@@ -409,7 +409,7 @@ if (empty($_GET['ajax']) || $_GET['ajax'] == 'statsme2') {
         <th class="hlstats-ranking nowrap<?= isSorted('rank_position',$sort,$sortorder) ?>"><?= headerUrl('rank_position', ['sm2_sort','sm2_sortorder'], 'statsme2').t('th.rank') ?></a></th>
         <th class="hlstats-main-description left<?= isSorted('smweapon',$sort,$sortorder) ?>"><?= headerUrl('smweapon', ['sm2_sort','sm2_sortorder'], 'statsme2').t('th.weapon') ?></a></th>
         <th class="<?= isSorted('smhits',$sort,$sortorder) ?>"><?= headerUrl('smhits', ['sm2_sort','sm2_sortorder'], 'statsme2').t('th.hits')?></a></th>
-        <th class="<?= isSorted('smleft',$sort,$sortorder) ?>"><?= headerUrl('smleft', ['sm2_sort','sm2_sortorder'], 'statsme2').t('th.left') ?>Left</a></th>
+        <th class="<?= isSorted('smleft',$sort,$sortorder) ?>"><?= headerUrl('smleft', ['sm2_sort','sm2_sortorder'], 'statsme2').t('th.left') ?></a></th>
         <th class="<?= isSorted('smmiddle',$sort,$sortorder) ?>"><?= headerUrl('smmiddle', ['sm2_sort','sm2_sortorder'], 'statsme2').t('th.middle') ?></a></th>
         <th class="<?= isSorted('smright',$sort,$sortorder) ?>"><?= headerUrl('smright', ['sm2_sort','sm2_sortorder'], 'statsme2').t('th.right') ?></a></th>
     </tr>

@@ -140,13 +140,19 @@ $commands[3]["cmd"] = "KILL";
 		echo "<strong>OK</strong></li>";
 		echo "</ul></div>\n";
 		
-		echo "&larr;&nbsp;<a href=\"?mode=admin&task=tools_perlcontrol&masterserver=".urlencode($host)."&port=".urlencode($_POST['port'])."&command=".urlencode($cmd_index)."\">Return to Daemon Control</a>";
+		echo "&larr;&nbsp;<a href=\"?mode=admin&task=tools_perlcontrol\">Return to Daemon Control</a>";
+		$_SESSION["masterserver"] = urlencode($host);
+		$_SESSION["port"]         = urlencode($_POST['port']);
+		$_SESSION["command"]      = urlencode($cmd_index);
+
 		}
 		else
 		{
-		$form_host    = isset($_GET['masterserver']) ? htmlspecialchars($_GET['masterserver']) : 'localhost';
-		$form_port    = isset($_GET['port'])         ? htmlspecialchars($_GET['port'])         : '27500';
-		$form_command = isset($_GET['command'])      ? (int)$_GET['command']                  : 0;
+		$main_daemon  = explode(',',$g_options['Proxy_Daemons'])[0];
+		$daemon_addr  = !empty($main_daemon)? explode(':',$main_daemon): array('localhost',27500);
+		$form_host    = isset($_SESSION['masterserver']) ? htmlspecialchars($_SESSION['masterserver']) : (!empty($daemon_addr[0]) ? $daemon_addr[0] : 'localhost');
+		$form_port    = isset($_SESSION['port'])         ? htmlspecialchars($_SESSION['port'])         : (!empty($daemon_addr[1]) ? $daemon_addr[1] : 27500);
+		$form_command = isset($_SESSION["command"])      ? (int)$_SESSION["command"]                   : 0;
 ?>
 <div class="hlstats-admin-note">
 <p>After every configuration change made in the Administration Center, you should reload the daemon configuration.  To do so, enter the hostname or IP address of your HLstats daemon and choose the reload option.  You can also shut down your daemon from this panel.<br>
