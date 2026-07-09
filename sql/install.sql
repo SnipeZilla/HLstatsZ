@@ -7001,6 +7001,7 @@ CREATE TABLE IF NOT EXISTS `hlstats_Users` (
   `password` varchar(32) NOT NULL default '',
   `acclevel` int(11) NOT NULL default '0',
   `playerId` int(11) NOT NULL default '0',
+  `steamid64` varchar(20) NULL default NULL,
   PRIMARY KEY  (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
