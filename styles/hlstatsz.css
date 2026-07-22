@@ -807,6 +807,7 @@ button.svg:hover svg{
 .hlstats-name{
   font-size:13px;
   font-weight:600;
+  overflow-wrap: break-word;
 }
 .hlstats-name.big { font-size:16px; }
 
