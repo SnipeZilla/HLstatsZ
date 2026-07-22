@@ -469,7 +469,7 @@ $banner = IMAGE_PATH."/games/$game/banner.jpg";
             </div>
             <div class="hlstats-card-foot">
                  <div class="hlstats-rankmeter meter-container">
-                   <meter value="80" min="0" max="100" low="25" high="50" optimum="75" value="<?= $rankPercent ?>"></meter>
+                   <meter min="0" max="100" low="25" high="50" optimum="75" value="<?= $rankPercent ?>"></meter>
                    <div class="meter-value" id="meterText"><?= $rankPercent ?>%</div>
                  </div>            
                  <div>Kills needed: <b><?php echo $rankKillsNeeded." (".nf($rankPercent, 0, '.', '');?>%)</b></div>
