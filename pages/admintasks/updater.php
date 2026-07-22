@@ -14,7 +14,12 @@ For current support and updates:
    https://forums.alliedmods.net/forumdisplay.php?f=156
 */
 if ( !defined('IN_HLSTATS') ) { die('Do not access this file directly'); }
-    
+
+if ($auth->userdata['acclevel'] < 100) {
+    echo '<p>You do not have access to this page.</p>';
+    return;
+}
+
     if (!file_exists("./updater")) {
         echo 'Updater directory is missing.';
         return;

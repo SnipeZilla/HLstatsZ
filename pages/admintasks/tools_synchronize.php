@@ -40,7 +40,7 @@ For support and installation notes visit http://www.hlxcommunity.com
         die('Do not access this file directly.');
     }
 	 
-	if ($auth->userdata["acclevel"] < 80) {
+	if ($auth->userdata["acclevel"] < 100) {
         die ("Access denied!");
 	}
 ?>
