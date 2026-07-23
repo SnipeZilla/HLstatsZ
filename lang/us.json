@@ -101,6 +101,11 @@
     "discord.voice.channels":      "Voice channels:",
     "discord.invite.link":         "Invite link:",
 
+    "title.mumble.overview":       "Mumble Overview",
+    "mumble.users":                "Users:",
+    "mumble.version":              "Version:",
+    "mumble.bandwidth":            "Bandwidth:",
+
     "voice.server.name":           "Server Name:",
 
     "goto.player.rankings":        "Player Rankings",

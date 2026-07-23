@@ -19,6 +19,7 @@ For current support and updates:
 	define('TS', 0);
 	define('STEAM_COMMUNITY', 1);
 	define('DISCORD', 2);
+	define('MUMBLE', 3);
 
 	if ($db->num_rows($resultVoices) >= 1) {
 
@@ -42,6 +43,7 @@ For current support and updates:
 		$ts_servers      = [];
 		$discord_servers = [];
 		$steam_servers   = [];
+		$mumble_servers  = [];
 		while ($row = $db->fetch_array($resultVoices)) {
 			if ($row['serverType'] == TS) {
 				$ts_servers[] = [
@@ -67,10 +69,18 @@ For current support and updates:
 					'addr'     => $row['addr'],
 					'descr'    => $row['descr'],
 				];
+			} else if ($row['serverType'] == MUMBLE) {
+				$mumble_servers[] = [
+					'serverId' => $row['serverId'],
+					'name'     => $row['name'],
+					'addr'     => $row['addr'],
+					'descr'    => $row['descr'],
+					'UDPPort'  => $row['UDPPort'],
+				];
 			}
 		}
 
-		if ($ts_servers || $discord_servers || $steam_servers) {
+		if ($ts_servers || $discord_servers || $steam_servers || $mumble_servers) {
 			printSectionTitle(t('title.commservers'));
 ?>
 		<table>
@@ -240,6 +250,44 @@ For current support and updates:
 				</td>
 				<td class="hide-2">
 					<?php echo htmlspecialchars($sc_server['descr'] ?? ''); ?>
+				</td>
+			</tr>
+<?php
+				}
+			}
+
+			if ($mumble_servers) {
+				require_once(PAGE_PATH . '/mumble_class.php');
+				foreach ($mumble_servers as $mb_server) {
+					$mb    = new MumbleQuery($mb_server['addr'], $mb_server['UDPPort'], 3);
+					$mbRes = $mb->query(30);
+
+					if ($mbRes['error']) {
+						$mb_slots = htmlspecialchars($mbRes['error']);
+					} else {
+						$mb_slots = $mbRes['users'] . '/' . $mbRes['maxusers'];
+					}
+					$mb_link = $mb_server['addr'] . ':' . $mb_server['UDPPort'];
+?>
+			<tr>
+				<td class="left">
+					<span class="hlstats-icon small"><img src="<?php echo IMAGE_PATH; ?>/mumble/mumble.svg" alt="mumbleicon" /></span>
+					<span class="hlstats-name"><a href="<?php echo $g_options['scripturl'] . "?mode=mumble&amp;mbId=".$mb_server['serverId']; ?>"><?php echo htmlspecialchars(trim($mb_server['name'])); ?></a></span>
+				</td>
+				<td class="hide">
+					<a href="mumble://<?php echo htmlspecialchars($mb_link); ?>/"><?php echo htmlspecialchars($mb_link); ?></a>
+				</td>
+				<td class="hide">
+					-
+				</td>
+				<td>
+					-
+				</td>
+				<td>
+					<?php echo $mb_slots; ?>
+				</td>
+				<td class="hide-2">
+					<?php echo htmlspecialchars($mb_server['descr'] ?? ''); ?>
 				</td>
 			</tr>
 <?php
