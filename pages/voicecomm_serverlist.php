@@ -21,8 +21,23 @@ For current support and updates:
 	define('DISCORD', 2);
 
 	if ($db->num_rows($resultVoices) >= 1) {
-		ob_flush();
-		flush();
+
+		if (!is_dir('./cache')) mkdir('./cache', 0755, true);
+
+		$voicecommCacheFile = './cache/hlstatsz_voicecomm_page.html';
+		$voicecommCacheTtl  = 20; // seconds before a cached copy is considered stale
+		$forceRefresh       = !empty($_GET['refresh']);
+
+		if (!$forceRefresh && is_file($voicecommCacheFile)) {
+			if ((time() - filemtime($voicecommCacheFile)) > $voicecommCacheTtl) {
+				// tell the client this copy is stale so it can silently fetch a fresh one
+				echo '<div data-voicecomm-stale hidden></div>';
+			}
+			readfile($voicecommCacheFile);
+			return;
+		}
+
+		ob_start();
 
 		$ts_servers      = [];
 		$discord_servers = [];
@@ -54,8 +69,6 @@ For current support and updates:
 				];
 			}
 		}
-
-		if (!is_dir('./cache')) mkdir('./cache', 0755, true);
 
 		if ($ts_servers || $discord_servers || $steam_servers) {
 			printSectionTitle(t('title.commservers'));
@@ -236,6 +249,10 @@ For current support and updates:
 		</table>
 <?php
 		}
+
+		$rendered = ob_get_clean();
+		file_put_contents($voicecommCacheFile, $rendered, LOCK_EX);
+		echo $rendered;
 	}
 	// VOICECOMM MODULE END
 ?>

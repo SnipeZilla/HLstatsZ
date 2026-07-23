@@ -126,7 +126,7 @@ Tabs.init({
 <?php } ?>
 
 <?php
-    if ((!empty($_SESSION['loggedin']) && (int)($_SESSION['acclevel'] ?? 0) >= 100) ||  (isset($_SESSION['ID64']) && STEAM_ADMIN === $_SESSION['ID64']))
+    if ((!empty($_SESSION['loggedin']) && (int)($_SESSION['acclevel'] ?? 0) >= 100) ||  (isset($_SESSION['ID64']) && isSteamAdmin($_SESSION['ID64'])))
 	{;
         echo "<div class=\"center\">
          <button onclick=\"window.location.href='?mode=admin&task=tools_editdetails_clan&id=$clan'\">".t('edit.clan')."</button>

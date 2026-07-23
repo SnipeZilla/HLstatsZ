@@ -174,7 +174,22 @@ if ($g_options['show_google_map'] == 1) {
         if ($num_voices) {
             $voicecomm_url = htmlspecialchars($_SERVER['PHP_SELF'] . '?mode=contents&ajax=voicecomm');
             echo '<div id="voicecomm-container" data-fetch-url="' . $voicecomm_url . '"></div>';
-            echo '<script>Fetch.run(' . json_encode($_SERVER['PHP_SELF'] . '?mode=contents&ajax=voicecomm') . ', "voicecomm-container",false);</script>';
+?>
+            <script>
+            (function () {
+                var url = <?= json_encode($_SERVER['PHP_SELF'] . '?mode=contents&ajax=voicecomm') ?>;
+                var el  = document.getElementById('voicecomm-container');
+                el.addEventListener('fetch:loaded', function (e) {
+                    if (e.detail.html.indexOf('data-voicecomm-stale') !== -1) {
+                        fetch(url + '&refresh=1', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                            .then(function (r) { return r.text(); })
+                            .then(function (html) { el.innerHTML = html; });
+                    }
+                });
+                Fetch.run(url, el, false);
+            })();
+            </script>
+<?php
         }
 
         if (!empty($nonhiddengamestring)) {

@@ -45,7 +45,7 @@ class Auth
 
     function __construct()
     {
-        if (isset($_SESSION['ID64']) && defined('STEAM_ADMIN') && $_SESSION['ID64'] == STEAM_ADMIN) {
+        if (isset($_SESSION['ID64']) && isSteamAdmin($_SESSION['ID64'])) {
             $this->ok = true;
             $this->error = false;
             $this->session = true;
@@ -919,7 +919,7 @@ function checkVersion() {
 
     global $db, $g_options;
     $needsupdate = false;
-    $webversion = '1.17.'.$g_options['dbversion'];
+    $webversion = '1.18.'.$g_options['dbversion'];
     if (isset($g_options['webversion']) && ($g_options['webversion'] != $webversion)) {
         $db->query("UPDATE hlstats_Options SET `value` = '$webversion' WHERE `keyname` = 'webversion'");
     }

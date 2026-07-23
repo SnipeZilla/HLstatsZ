@@ -391,7 +391,7 @@ function setForumText(val) {
             <?= t('items.deletedays',["{DeleteDays}" => '<strong>'.$g_options['DeleteDays'].'</strong>']) ?>
         </div>
 <?php }
-    if ((!empty($_SESSION['loggedin']) && (int)($_SESSION['acclevel'] ?? 0) >= 100) || (isset($_SESSION['ID64']) && STEAM_ADMIN === $_SESSION['ID64']))
+    if ((!empty($_SESSION['loggedin']) && (int)($_SESSION['acclevel'] ?? 0) >= 100) || (isset($_SESSION['ID64']) && isSteamAdmin($_SESSION['ID64'])))
     {
         echo "<div class=\"center\">
          <button onclick=\"window.location.href='?mode=admin&task=tools_editdetails_player&id=$player'\">".t('edit.player')."</button>

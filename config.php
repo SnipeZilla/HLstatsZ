@@ -102,7 +102,9 @@ define("GOOGLE_ANALYTICS_ID", "");
 // Steam Web API Key
 define("STEAM_API", '');
 
-// Steam Admin - Admin link will be removed
+// Steam Admin - Admin link will be removed.
+// Accepts a single SteamID64 string '76561197012345678'
+// or an array of them, e.g. ['76561197012345678', '76561197876543210']
 define("STEAM_ADMIN", '');
 
 // Secret key for secure cookie signing (required)

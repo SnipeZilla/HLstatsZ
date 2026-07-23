@@ -262,7 +262,7 @@ if ( isset($_GET['openid_assoc_handle']) ) {
             
                 $_SESSION['ID64']=$steam['ID64'];
                 myCookie('steam', steamAuthCookieValue($steam), time()+(24*3600));
-                $admin= STEAM_ADMIN === $steam['ID64'] ? '<a href="?mode=admin">admin</a>' : '';
+                $admin= isSteamAdmin($steam['ID64']) ? '<a href="?mode=admin">admin</a>' : '';
                 $updatedQuery = updateQueryKey(['signout' => 'true']);
                 $baseUrl = $_SERVER['PHP_SELF'].'?'.$updatedQuery;
                 return $admin.'<a href="'.$baseUrl.'">sign out</a><a href="?mode=search&q='.$steam['ID64'].

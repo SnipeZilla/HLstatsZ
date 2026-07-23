@@ -571,6 +571,16 @@ function updateQueryKey(array $keys): string {
 
 }
 
+function isSteamAdmin(?string $id64): bool
+{
+	if (!defined('STEAM_ADMIN') || empty(STEAM_ADMIN) || $id64 === null)
+	{
+		return false;
+	}
+
+	return in_array($id64, array_map('strval', (array) STEAM_ADMIN), true);
+}
+
 function clearAdminSession(bool $regenerate = true): void
 {
 	$keys = array('loggedin', 'username', 'password', 'authpasswordhash', 'acclevel', 'authsessionStart');
