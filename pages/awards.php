@@ -25,7 +25,7 @@ if ( !defined('IN_HLSTATS') ) { die('Do not access this file directly'); }
 
 	if (is_ajax())
 	{
-		$tabs = explode('_', preg_replace('[^a-z]', '', $tab));
+		$tabs = explode('_', preg_replace('/[^a-z]/', '', $tab));
 		
 		foreach ( $tabs as $tab )
 		{
