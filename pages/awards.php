@@ -25,7 +25,7 @@ if ( !defined('IN_HLSTATS') ) { die('Do not access this file directly'); }
 
 	if (is_ajax())
 	{
-		$tabs = explode('_', preg_replace('[^a-z]', '', $tab));
+		$tabs = explode('_', preg_replace('/[^a-z]/', '', $tab));
 		
 		foreach ( $tabs as $tab )
 		{
@@ -51,7 +51,7 @@ if ( !defined('IN_HLSTATS') ) { die('Do not access this file directly'); }
         <a href="#ranks" class="tab" data-url="ranks" data-target="tab3"><?= t('awards.tab3') ?></a>
     </li>
     <li>
-        <a href="#Ribbons" class="tab" data-url="Ribbons" data-target="tab4"><?= t('awards.tab4') ?></a>
+        <a href="#ribbons" class="tab" data-url="ribbons" data-target="tab4"><?= t('awards.tab4') ?></a>
     </li>
 </ul>
 </div>
